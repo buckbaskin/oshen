@@ -4,5 +4,8 @@ setuptools
 # webserver
 flask
 
+# twitter
+twitter
+
 # docker
 docker-py
