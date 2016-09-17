@@ -1,0 +1,37 @@
+<html>
+<head>
+</head>
+<body>
+Hello World
+Auth, Database, Storage
+
+<p id="stuf"></p>
+<script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+<script>
+// Initialize Firebase
+</script>
+<script src="http://code.jquery.com/jquery-3.1.0.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous">
+</script>
+<script>
+$(document).ready(function() {
+var config = {
+apiKey: "AIzaSyDO2Ok9M9FGTma853Z6Omq4ZuqHrqAbamc",
+authDomain: "oshen-6bb25.firebaseapp.com",
+databaseURL: "https://oshen-6bb25.firebaseio.com",
+storageBucket: "",
+messagingSenderId: "91612131060"
+};
+firebase.initializeApp(config);
+
+var databaseRef = firebase.database().ref();
+databaseRef.set("HelloWorld");
+databaseRef.on("value", function(snapshot) {
+var val = snapshot.val();
+$("#stuff").text(val);
+
+})
+
+})
+</script>
+</body>
+</html>
