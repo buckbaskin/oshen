@@ -1,0 +1,7 @@
+-r requirements.txt
+
+codecov
+coverage
+hypothesis
+nose
+nose-timer

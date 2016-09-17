@@ -1,0 +1,8 @@
+pip
+setuptools
+
+# webserver
+flask
+
+# docker
+docker-py
