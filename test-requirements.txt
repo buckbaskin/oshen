@@ -5,3 +5,5 @@ coverage
 hypothesis
 nose
 nose-timer
+
+pylint

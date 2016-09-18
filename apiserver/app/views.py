@@ -1,5 +1,4 @@
 from app import server
-from app.twitter_api import views
 from app.twitter_api import tasks as twitter_tasks
 
 from app.db import mongo, bson2json
@@ -37,10 +36,10 @@ def user_read(username):
 
 @server.route('/u/<username>/start', methods=('GET', 'POST',))
 def user_start(username):
-    result = funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
+    funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
     return make_response('OK', 200)
 
 @server.route('/u/<username>/analyze', methods=('GET', 'POST',))
 def user_analyze(username):
-    result = funnel().enqueue(twitter_tasks.user_start_analysis, username)
+    funnel().enqueue(twitter_tasks.user_start_analysis, username)
     return make_response('OK', 200)

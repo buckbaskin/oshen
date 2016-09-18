@@ -51,13 +51,13 @@ def request_followers(username):
         last_cursor = current_cursor + 0
         api_data = API().followers.list(screen_name=username, cursor=current_cursor, count=200)
         for user in api_data['users']:
-            result = runner.mongo().enqueue(store_user, user)
-            result = runner.mongo().enqueue(request_1K_tweets, username)
+            runner.mongo().enqueue(store_user, user)
+            runner.mongo().enqueue(request_1K_tweets, username)
         current_cursor = api_data['next_cursor']
 
 def store_user(user_data):
     # do some storage magic
-    user['screen_name'] = str(user['screen_name']).lower()
+    user_data['screen_name'] = str(user_data['screen_name']).lower()
     print('store_user: storing user_data %s' % (user_data,))
     database = db.mongo()['users']
     collection = database['metadata']
@@ -66,29 +66,34 @@ def store_user(user_data):
     return 0
 
 def user_start(username):
-    result = runner.twitter(server.config['TESTING']).enqueue(request_user, username)
+    runner.twitter(server.config['TESTING']).enqueue(request_user, username)
     return 0
 
 def filter_retweets(username):
     '''
     Set aside all retweets by the given username
     '''
-    pass
+    # get all stored tweets from a user
+    # loop over them and remove the non-retweets
+    # store the retweets in their own location
+    return 0
 
 def filter_follower_retweets(username, next_queue, next_function):
     '''
     For all followers of a user, set aside retweets
     '''
-    # aggregate the 
+    # aggregate the list of followers
+    # loop over them and queue up the filter_retweets
     
     next_queue.enqueue(next_function, username)
+    return 0
 
 def analyze_retweets(username, primary_user):
     '''
     For an individual follower, aggregate information about the retweets, and 
     append to the information for the primary user.
     '''
-    pass
+    return 0
 
 def analyze_follower_retweets(username, next_queue, next_function):
     '''
@@ -97,6 +102,7 @@ def analyze_follower_retweets(username, next_queue, next_function):
     # run against all followers
 
     next_queue.enqueue(next_function, username)
+    return 0
 
 def user_run_analysis(username):
     database = db.mongo(server.config['TESTING'])['users']
@@ -105,7 +111,7 @@ def user_run_analysis(username):
     result = collection.find_one(filter=request, max_time_ms=1000)
     if not result:
         # if the result is not there, do a user start
-        result = funnel().enqueue(user_start, username)
+        runner.funnel().enqueue(user_start, username)
     # filter follower retweets, then run analysis on them
     runner.analysis().enqueue(filter_follower_retweets, username, runner.analysis(), analyze_follower_retweets,)
 
