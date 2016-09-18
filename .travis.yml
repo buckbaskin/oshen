@@ -15,6 +15,7 @@ cache: "pip"
 
 services:
   - redis-server
+  - mongodb
 
 # command to install dependencies
 install: 
