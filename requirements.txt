@@ -1,8 +1,11 @@
 pip
 setuptools
+-i https://testpypi.python.org/pypi couchpotato
 
 # webserver
 flask
+requests
+docker-py
 
 # twitter
 twitter
