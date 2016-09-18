@@ -58,11 +58,16 @@ def request_followers(username):
 def store_user(user_data):
     # do some storage magic
     user_data['screen_name'] = str(user_data['screen_name']).lower()
-    print('store_user: storing user_data %s' % (user_data,))
     database = db.mongo()['users']
     collection = database['metadata']
     result = collection.insert_one(user_data)
-    print('insert id %s' % (result.inserted_id,))
+    return 0
+
+def store_tweet(tweet_data):
+    tweet_data['user']['screen_name'] = str(tweet_data['user']['screen_name']).lower()
+    database = db.mongo()['users']
+    collection = database['tweets']
+    result = collection.insert_one(tweet_data)
     return 0
 
 def user_start(username):
