@@ -5,7 +5,7 @@ from app.twitter_api import tasks as twitter_tasks
 from app.db import mongo
 from app.runner import funnel
 
-from flask import render_template
+from flask import render_template, make_response
 
 # a default route to display information
 @server.route('/', methods=('GET',))
