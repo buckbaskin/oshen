@@ -39,7 +39,6 @@ def request_user(username):
         if 'screen_name' in user:
             user['screen_name'] = str(user['screen_name']).lower()
             result = runner.mongo(server.config['TESTING']).enqueue(store_user, user)
-            result = runner.mongo().enqueue(request_1K_tweets, str(username).lower())
             result = runner.mongo().enqueue(request_followers, str(username).lower())
     return 0
 
@@ -69,7 +68,7 @@ def request_followers(username):
         for user in api_data['users']:
             list_of_follower_screen_names.append(str(user['screen_name']).lower())
             runner.mongo().enqueue(store_user, user)
-            runner.mongo().enqueue(request_1K_tweets, username)
+            runner.mongo().enqueue(request_1K_tweets, user['screen_name'])
         current_cursor = api_data['next_cursor']
     database = db.mongo(server.config['TESTING'])['users']
     collection = database['metadata']
@@ -87,7 +86,7 @@ def store_tweet(username, tweet_data):
     tweet_data['user']['screen_name'] = str(tweet_data['user']['screen_name']).lower()
     database = db.mongo()['users']
     collection = database['tweets']
-    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {username : tweet_data}})
+    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {'tweets' : [tweet_data]}})
     return 0
 
 def user_start(username):
@@ -102,6 +101,10 @@ def filter_retweets(username):
     # get all stored tweets from a user
     # loop over them and remove the non-retweets
     # store the retweets in their own location
+    database = db.mongo()['users']
+    collection = database['tweets']
+    user_tweets = collection.find_one({'screen_name': str(username).lower()})['tweets']
+    print('username %s has %s tweets' % (username, len(user_tweets)))
     return 0
 
 def filter_follower_retweets(username, next_queue, next_function):
@@ -111,7 +114,11 @@ def filter_follower_retweets(username, next_queue, next_function):
     # TODO(buckbaskin):
     # aggregate the list of followers
     # loop over them and queue up the filter_retweets
-    
+    database = db.mongo()['users']
+    collection = database['metadata']
+    followers = collection.find_one({'screen_name': str(username).lower()})['follower_screen_names']
+    for follower in followers:
+        runner.analysis().enqueue(filter_retweets, follower, username)
     next_queue.enqueue(next_function, username)
     return 0
 
