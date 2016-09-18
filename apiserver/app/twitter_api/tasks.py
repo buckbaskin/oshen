@@ -163,7 +163,7 @@ def filter_follower_retweets(username, next_queue, next_function):
     print('start of function')
     database = db.mongo()['users']
     collection = database['metadata']
-    followers = collection.find_one({'screen_name': str(username).lower()})['follower_screen_names'][0]
+    followers = collection.find_one({'screen_name': 'bebaskin'})['follower_screen_names'][0]
     print('followers: %s' % (followers,))
     for follower in followers:
         runner.analysis().enqueue(filter_retweets, args=(follower, ))
@@ -195,7 +195,7 @@ def analyze_follower_retweets(username):
             pass
         except ValueError:
             pass
-    print(sorted(new_list, key=lambda x: -x[1])[:50])
+    print(sorted(new_list, key=lambda x: -x[1])[30:50])
     return 0
 
 def user_run_analysis(username):
