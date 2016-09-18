@@ -23,7 +23,7 @@ def user_read(username):
     db = mongo(server.config['TESTING'])['users']
     collection = db['metadata']
     result = funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
-    request = {'username': username}
+    request = {'screen_name': str(username).lower()}
     print('start request %s' % (request,))
     result = collection.find_one(filter=request, max_time_ms=100)
     print('result = %s' % (result,))

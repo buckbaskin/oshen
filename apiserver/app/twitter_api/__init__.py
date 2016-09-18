@@ -11,13 +11,14 @@ class TwitterMock(it.Twitter):
 def API(mock=False):
     if mock:
         return TwitterMock()
+    print('CWD: %s' % os.getcwd())
     with open('instance/twitterc.txt', 'r') as f:
-        consumerKey = f.readline[:-1]
-        consumerSecret = f.readline[:-1]
+        consumerKey = f.readline()[:-1]
+        consumerSecret = f.readline()[:-1]
     if os.path.isfile('instance/twittera.txt'):
-        with open('instance/twittera.txt'):
-            accessToken = f.readline[:-1]
-            accessTokenSecret = f.readline[:-1]
+        with open('instance/twittera.txt') as f:
+            accessToken = f.readline()[:-1]
+            accessTokenSecret = f.readline()[:-1]
     else:
         accessToken, accessTokenSecret = it.oauth_dance('The Insight Project', consumerKey, consumerSecret, token_filename='instance/twittera.txt')
     

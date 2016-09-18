@@ -12,7 +12,7 @@ def setup_module():
 
     database = db.mongo()['users']
     collection = database['metadata']
-    request = {'username': 'bebaskin', 'age': 'old'}
+    request = {'screen_name': 'bebaskin', 'age': 'old'}
     pprint.pprint(request)
     collection.insert_one(request)
 
