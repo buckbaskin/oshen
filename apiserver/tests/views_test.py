@@ -24,7 +24,14 @@ def test_user_read():
     response = test_client.get('/u/bebaskin')
     assert_equal(response.status_code, 200)
 
+def test_user_read_fail():
+    response = test_client.get('/u/a')
+    assert_equal(response.status_code, 404)
+
 def test_user_start():
     response = test_client.get('/u/bebaskin/start')
     assert_equal(response.status_code, 200)
 
+def test_user_analyze():
+    response = test_client.get('/u/bebaskin/analyze')
+    assert_equal(response.status_code, 200)
