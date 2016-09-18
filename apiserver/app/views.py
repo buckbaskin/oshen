@@ -6,8 +6,6 @@ from app.runner import funnel
 
 from flask import render_template
 
-from firebase import firebase
-
 # a default route to display information
 @server.route('/', methods=('GET',))
 def index():
