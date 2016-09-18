@@ -39,7 +39,7 @@ def request_1K_tweets(username):
             api_data = API().statuses.user_timeline(screen_name=username, count=200, trim_user='true', exclude_replies='false', contributor_details='false', include_rts='true', max_id=max_id)
 
         for tweet in api_data:
-            # TODO(buckbaskin): write tweet
+            runner.mongo().enqueue(store_tweet, tweet)
             if tweet['id'] < max_id or max_id == -1:
                 max_id = tweet['id']
         count += 200
