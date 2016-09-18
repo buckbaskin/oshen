@@ -15,7 +15,9 @@ def handle_api_error(func):
             raise e
         except TwitterHTTPError as e:
             print('Rate limited')
-            time.sleep(60*15)
+            for i in range(15, 1, -1):
+                print('%s minutes remaining.' % (i,))
+                time.sleep(60)
             raise e
     return wrapper
 
@@ -43,6 +45,7 @@ def request_user(username):
     return 0
 
 def request_1K_tweets(username):
+    print('r1Kt: for username %s' % (username,))
     last_max_id = -2
     count = 0
     max_id = -1
@@ -50,10 +53,13 @@ def request_1K_tweets(username):
     while(max_id != last_max_id and count < 1000):
         last_max_id = max_id
         if max_id != -1:
+            print('next api data!')
             api_data = handle_api_error(API().statuses.user_timeline)(screen_name=username, count=200, trim_user='true', exclude_replies='false', contributor_details='false', include_rts='true', max_id=max_id)
-
+        else:
+            api_data = handle_api_error(API().statuses.user_timeline)(screen_name=username, count=200, trim_user='true', exclude_replies='false', contributor_details='false', include_rts='true')
+        print('r1Kt: found %s tweets' % (len(api_data),))
         for tweet in api_data:
-            runner.mongo().enqueue(store_tweet, tweet)
+            runner.mongo().enqueue(store_tweet, args=(username, tweet,))
             if tweet['id'] < max_id or max_id == -1:
                 max_id = tweet['id']
         count += 200
@@ -68,7 +74,7 @@ def request_followers(username):
         for user in api_data['users']:
             list_of_follower_screen_names.append(str(user['screen_name']).lower())
             runner.mongo().enqueue(store_user, user)
-            runner.mongo().enqueue(request_1K_tweets, user['screen_name'])
+            runner.twitter().enqueue(request_1K_tweets, user['screen_name'], timeout=10000)
         current_cursor = api_data['next_cursor']
     database = db.mongo(server.config['TESTING'])['users']
     collection = database['metadata']
@@ -83,14 +89,18 @@ def store_user(user_data):
     return 0
 
 def store_tweet(username, tweet_data):
-    tweet_data['user']['screen_name'] = str(tweet_data['user']['screen_name']).lower()
+    try:
+        tweet_data['user']['screen_name'] = str(tweet_data['user']['screen_name']).lower()
+    except KeyError:
+        pass
     database = db.mongo()['users']
     collection = database['tweets']
-    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {'tweets' : [tweet_data]}})
+    print('store_tweet: mongo[users][tweets]')
+    result = collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {'tweets' : [tweet_data]}}, upsert=True)
     return 0
 
 def user_start(username):
-    runner.twitter(server.config['TESTING']).enqueue(request_user, username)
+    runner.twitter(server.config['TESTING']).enqueue(request_user, username, timeout=10000)
     return 0
 
 def filter_retweets(username):
@@ -103,7 +113,9 @@ def filter_retweets(username):
     # store the retweets in their own location
     database = db.mongo()['users']
     collection = database['tweets']
-    user_tweets = collection.find_one({'screen_name': str(username).lower()})['tweets']
+    data = collection.find_one({'screen_name': str(username).lower()})
+    print('data! %s' % (data,))
+    user_tweets = data['tweets']
     print('username %s has %s tweets' % (username, len(user_tweets)))
     return 0
 
@@ -114,12 +126,13 @@ def filter_follower_retweets(username, next_queue, next_function):
     # TODO(buckbaskin):
     # aggregate the list of followers
     # loop over them and queue up the filter_retweets
+    print('start of function')
     database = db.mongo()['users']
     collection = database['metadata']
     followers = collection.find_one({'screen_name': str(username).lower()})['follower_screen_names']
     for follower in followers:
-        runner.analysis().enqueue(filter_retweets, follower, username)
-    next_queue.enqueue(next_function, username)
+        runner.analysis().enqueue(filter_retweets, args=(follower, ))
+    getattr(runner, next_queue).enqueue(getattr(app.twitter_api.tasks, next_function), username)
     return 0
 
 def analyze_retweets(username, primary_user):
@@ -137,7 +150,7 @@ def analyze_follower_retweets(username, next_queue, next_function):
     # TODO(buckbaskin):
     # run against all followers
 
-    next_queue.enqueue(next_function, username)
+    getattr(runner, next_queue).enqueue(getattr(app.twitter_api.tasks, next_function), username)
     return 0
 
 def user_run_analysis(username):
@@ -149,7 +162,7 @@ def user_run_analysis(username):
         # if the result is not there, do a user start
         runner.funnel().enqueue(user_start, username)
     # filter follower retweets, then run analysis on them
-    runner.analysis().enqueue(filter_follower_retweets, username, runner.analysis(), analyze_follower_retweets,)
+    runner.analysis().enqueue(filter_follower_retweets, args=(username, 'analysis', 'analyze_follower_retweets',))
 
 def user_start_analysis(username):
     runner.analysis().enqueue(user_run_analysis, username)
