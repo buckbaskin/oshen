@@ -12,7 +12,6 @@ rq
 
 # mongo
 pymongo
-bson
 
 # twitter
 twitter
