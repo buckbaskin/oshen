@@ -10,20 +10,20 @@ class QueueMock(Queue):
 @cache
 def funnel(mock=False):
     if mock:
-        return QueueMock()
+        return QueueMock('funnel')
     else:
-        return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
+        return Queue('funnel', connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
 
 @cache
 def twitter(mock=False):
     if mock:
-        return QueueMock()
+        return QueueMock('twitter')
     else:
-        return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
+        return Queue('twitter', connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
 
 @cache
 def mongo(mock=False):
     if mock:
-        return QueueMock()
+        return QueueMock('mongo')
     else:
-        return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
+        return Queue('mongo', connection=StrictRedis(host='127.0.0.1', port=6379, db=0))

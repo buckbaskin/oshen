@@ -8,15 +8,19 @@ def request_user(username):
     # do some request magic: check and see if the user is stored
     #  else make api call
     user_data = {
-        'username': 'buckbaskin'
+        'username': 'bebaskin',
+        'description': 'n days since last major coding hazard',
+        'age': 'old as dirt'
     }
-    result = mongo.enqueue(store_user, user_data)
+    # print('request_user: username %s got type %s of size %s' % (username, type(user_data), len(user_data),))
+    result = mongo().enqueue(store_user, user_data)
     return 0
 
 def store_user(user_data):
     # do some storage magic
+    print('store_user: storing user_data %s' % (user_data,))
     return 0
 
 def user_start(username):
-    result = twitter.enqueue(request_user, username)
+    result = twitter().enqueue(request_user, username)
     return 0
