@@ -20,9 +20,9 @@ def user_read(username):
      |- metadata (cached information from twitter about user)
      |- active (users that have logged in here)
     '''
-    db = mongo()['users']
+    db = mongo(server.config['TESTING'])['users']
     collection = db['metadata']
-    result = funnel().enqueue(twitter_tasks.user_start, username)
+    result = funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
     request = {'username': username}
     print('start request %s' % (request,))
     result = collection.find_one(filter=request, max_time_ms=100)
@@ -36,8 +36,8 @@ def user_read(username):
 
 @server.route('/u/<username>/start', methods=('GET', 'POST',))
 def user_start(username):
-    db = mongo()['users']
+    db = mongo(server.config['TESTING'])['users']
     collection = db['stored_data']
-    result = funnel().enqueue(twitter_tasks.user_start, username)
+    result = funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
     return make_response('OK', 200)
 
