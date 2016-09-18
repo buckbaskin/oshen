@@ -13,7 +13,8 @@ python:
 # save pip installs between runs
 cache: "pip"
 
-# services:
+services:
+  - redis-server
 
 # command to install dependencies
 install: 
