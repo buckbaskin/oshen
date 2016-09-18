@@ -10,6 +10,9 @@ docker-py
 redis
 rq
 
+# mongo
+pymongo
+
 # twitter
 twitter
 
