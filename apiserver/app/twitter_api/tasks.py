@@ -1,4 +1,4 @@
-from app.runner import twitter, mongo
+from app import runner, db
 
 # converts each item to a store in redis for intermediates, and stores the final
 #  result in mongo (by a last job). Adds a callback field to each function that
@@ -6,6 +6,14 @@ from app.runner import twitter, mongo
 # @jobify
 def request_user(username):
     # do some request magic: check and see if the user is stored
+    database = db.mongo()['users']
+    collection = database['metadata']
+    request = {'username': username}
+    result = collection.find_one(filter=request, max_time_ms=1000)
+    if result:
+        # break chain, the user data is already there
+        return 0
+
     #  else make api call
     user_data = {
         'username': 'bebaskin',
@@ -13,14 +21,18 @@ def request_user(username):
         'age': 'old as dirt'
     }
     # print('request_user: username %s got type %s of size %s' % (username, type(user_data), len(user_data),))
-    result = mongo().enqueue(store_user, user_data)
+    result = runner.mongo().enqueue(store_user, user_data)
     return 0
 
 def store_user(user_data):
     # do some storage magic
     print('store_user: storing user_data %s' % (user_data,))
+    db = db.mongo['users']
+    collection = db['metadata']
+    result = collection.insert_one(user_data)
+    print('insert id %d' % (result.inserted_id,))
     return 0
 
 def user_start(username):
-    result = twitter().enqueue(request_user, username)
+    result = runner.twitter().enqueue(request_user, username)
     return 0
