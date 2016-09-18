@@ -13,3 +13,17 @@ def funnel(mock=False):
         return QueueMock()
     else:
         return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
+
+@cache
+def twitter(mock=False):
+    if mock:
+        return QueueMock()
+    else:
+        return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))
+
+@cache
+def mongo(mock=False):
+    if mock:
+        return QueueMock()
+    else:
+        return Queue(connection=StrictRedis(host='127.0.0.1', port=6379, db=0))

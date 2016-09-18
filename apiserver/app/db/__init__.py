@@ -6,6 +6,7 @@ class MongoMock(MongoClient):
     def __init__():
         pass
 
+print('load mongo()')
 @cache
 def mongo(mock=False):
     if mock:

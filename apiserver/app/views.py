@@ -1,7 +1,9 @@
 from app import server
-from app.twitter_api import views, tasks as twitter_tasks
+from app.twitter_api import views
+from app.twitter_api import tasks as twitter_tasks
 
 from app.db import mongo
+print('loading mongo: %s' % (mongo,))
 from app.runner import funnel
 
 from flask import render_template
@@ -11,7 +13,7 @@ from flask import render_template
 def index():
     return render_template('index.html')
 
-@server.route('/u/<username>', methods=('POST',))
+@server.route('/u/<username>', methods=('GET', 'POST',))
 def user_read(username):
     '''
     users
@@ -28,7 +30,7 @@ def user_read(username):
     else:
         return make_response('User Not Found', 404)
 
-@server.route('/u/<username>/basics', methods=('POST',))
+@server.route('/u/<username>/basics', methods=('GET', 'POST',))
 def user_start(username):
     db = mongo()['users']
     collection = db['stored_data']
