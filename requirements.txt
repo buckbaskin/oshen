@@ -1,11 +1,14 @@
 pip
 setuptools
--i https://testpypi.python.org/pypi couchpotato
 
 # webserver
 flask
 requests
 docker-py
+
+# redis
+redis
+rq
 
 # twitter
 twitter
