@@ -17,6 +17,7 @@ def user_read(username):
     '''
     users
      |- stored data (calculated info about this user)
+     |- tweet data (cached tweets from users)
      |- metadata (cached information from twitter about user)
      |- active (users that have logged in here)
     '''
@@ -36,8 +37,10 @@ def user_read(username):
 
 @server.route('/u/<username>/start', methods=('GET', 'POST',))
 def user_start(username):
-    db = mongo(server.config['TESTING'])['users']
-    collection = db['stored_data']
     result = funnel(server.config['TESTING']).enqueue(twitter_tasks.user_start, username)
     return make_response('OK', 200)
 
+@server.route('/u/<username>/analyze', methods=('GET', 'POST',))
+def user_analyze(username):
+    result = funnel().enqueue(twitter_tasks.user_start_analysis, username)
+    return make_response('OK', 200)
