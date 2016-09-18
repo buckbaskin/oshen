@@ -146,8 +146,9 @@ def filter_retweets(username):
         for tweet in user_tweets:
             print('%s said %s' % (username, tweet['text']))
             for word in tweet['text'].split(' '):
-                collection.find_and_update_one({'john': 'doe'}, {'$inc' : {word : 1}}, upsert=True)
-    except TypeError:
+                print('word: %s' % (word,))
+                collection.find_one_and_update({}, {'$inc' : {word : 1}}, upsert=True)
+    except TypeError as e:
         pass
     return 0
 
@@ -184,8 +185,14 @@ def analyze_follower_retweets(username):
     # run against all followers
     database = db.mongo()['users']
     collection = database['retweets']
-    result = collection.find_one({'john':'doe'})
-    print('list(result) >>> ' % (-result,))
+    result = collection.find_one()
+    new_list = []
+    for item in result.items():
+        try:
+            new_list.append((item[0], int(str(item[1]+'')),))
+        except TypeError:
+            pass
+    print(sorted(new_list, key=lambda x: x[1])[:10])
     return 0
 
 def user_run_analysis(username):
