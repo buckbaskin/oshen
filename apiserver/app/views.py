@@ -23,7 +23,7 @@ def user_read(username):
     '''
     db = mongo['users']
     collection = db['stored_data']
-    result = funnel.enqueue(twitter_tasks.user_start, username)
+    result = funnel().enqueue(twitter_tasks.user_start, username)
     result = collection.find_one({'username': username}, 200)
     if result:
         return make_response(collection.find_one({'username': username}), 200)
@@ -34,6 +34,6 @@ def user_read(username):
 def user_start(username):
     db = mongo['users']
     collection = db['stored_data']
-    result = funnel.enqueue(twitter_tasks.user_start, username)
+    result = funnel().enqueue(twitter_tasks.user_start, username)
     return make_response('OK', 200)
 
