@@ -18,21 +18,19 @@ def request_user(username):
 
     #  else make api call
     api_data = API().users.lookup(screen_name=str(username).lower(), include_entities=True)
-    list_of_follower_screen_names = []
     for user in api_data:
         if 'screen_name' in user:
             user['screen_name'] = str(user['screen_name']).lower()
-            list_of_follower_screen_names.append(user['screen_name'])
             result = runner.mongo(server.config['TESTING']).enqueue(store_user, user)
             result = runner.mongo().enqueue(request_1K_tweets, str(username).lower())
             result = runner.mongo().enqueue(request_followers, str(username).lower())
-    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$push': {'follower_screen_names': list_of_follower_screen_names}})
     return 0
 
 def request_1K_tweets(username):
     last_max_id = -2
     count = 0
     max_id = -1
+    api_data = []
     while(max_id != last_max_id and count < 1000):
         last_max_id = max_id
         if max_id != -1:
@@ -47,13 +45,18 @@ def request_1K_tweets(username):
 def request_followers(username):
     current_cursor = -1
     last_cursor = -2
+    list_of_follower_screen_names = []
     while(current_cursor != last_cursor):
         last_cursor = current_cursor + 0
         api_data = API().followers.list(screen_name=username, cursor=current_cursor, count=200)
         for user in api_data['users']:
+            list_of_follower_screen_names.append(str(user['screen_name']).lower())
             runner.mongo().enqueue(store_user, user)
             runner.mongo().enqueue(request_1K_tweets, username)
         current_cursor = api_data['next_cursor']
+    database = db.mongo(server.config['TESTING'])['users']
+    collection = database['metadata']
+    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {'follower_screen_names': list_of_follower_screen_names}})
 
 def store_user(user_data):
     # do some storage magic

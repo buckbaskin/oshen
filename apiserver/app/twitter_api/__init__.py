@@ -11,7 +11,6 @@ class TwitterMock(it.Twitter):
 def API(mock=False):
     if mock:
         return TwitterMock()
-    print('CWD: %s' % os.getcwd())
     with open('instance/twitterc.txt', 'r') as f:
         consumerKey = f.readline()[:-1]
         consumerSecret = f.readline()[:-1]
