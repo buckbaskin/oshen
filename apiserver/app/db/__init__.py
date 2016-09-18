@@ -4,8 +4,7 @@ from bson import ObjectId
 from app.util import cache
 
 class MongoMock(MongoClient):
-    def __init__():
-        pass
+    pass
 
 @cache
 def mongo(mock=False):

@@ -7,8 +7,12 @@ host = 'localhost'
 port = 6379
 
 class QueueMock(Queue):
-    def __init__():
-        pass
+    pass
+
+#    def __init__(self, name='default'):
+#        self._default_timeout = 500
+#        self.connection = 1
+#        self.name = name
 
 @cache
 def funnel(mock=False):

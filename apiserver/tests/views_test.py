@@ -3,11 +3,18 @@ from app import db
 
 from nose.tools import ok_, assert_equal
 
+import pprint
+
 def setup_module():
     global test_client
-    server.config['TESTING'] = True
+    server.config['TESTING'] = False
     test_client = server.test_client()
-    db.mongo(server.config['TESTING'])['users']['metadata'].insert_one({'username': bebaskin, 'age': 'old'})
+
+    database = db.mongo()['users']
+    collection = database['metadata']
+    request = {'username': 'bebaskin', 'age': 'old'}
+    pprint.pprint(request)
+    collection.insert_one(request)
 
 def test_index():
     response = test_client.get('/')

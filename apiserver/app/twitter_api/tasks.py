@@ -1,5 +1,5 @@
 from app import runner, db
-from app.server import config
+from app import server
 
 # converts each item to a store in redis for intermediates, and stores the final
 #  result in mongo (by a last job). Adds a callback field to each function that
@@ -7,7 +7,7 @@ from app.server import config
 # @jobify
 def request_user(username):
     # do some request magic: check and see if the user is stored
-    database = db.mongo(config['TESTING'])['users']
+    database = db.mongo(server.config['TESTING'])['users']
     collection = database['metadata']
     request = {'username': username}
     result = collection.find_one(filter=request, max_time_ms=1000)
@@ -22,7 +22,7 @@ def request_user(username):
         'age': 'old as dirt'
     }
     # print('request_user: username %s got type %s of size %s' % (username, type(user_data), len(user_data),))
-    result = runner.mongo(config['TESTING']).enqueue(store_user, user_data)
+    result = runner.mongo(server.config['TESTING']).enqueue(store_user, user_data)
     return 0
 
 def store_user(user_data):
@@ -35,5 +35,5 @@ def store_user(user_data):
     return 0
 
 def user_start(username):
-    result = runner.twitter(config['TESTING']).enqueue(request_user, username)
+    result = runner.twitter(server.config['TESTING']).enqueue(request_user, username)
     return 0

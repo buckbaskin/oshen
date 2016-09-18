@@ -1,6 +1,6 @@
 export STATUS=TESTING
 echo $STATUS
-nosetests -v  \
+nosetests -v --nocapture \
 --with-timer --timer-top-n 5 --timer-ok 250ms --timer-warning 500ms \
 --with-coverage --cover-erase --cover-html --cover-package=app --cover-branches \
 apiserver/tests/
