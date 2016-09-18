@@ -3,7 +3,6 @@ from app.twitter_api import views
 from app.twitter_api import tasks as twitter_tasks
 
 from app.db import mongo
-print('loading mongo: %s' % (mongo,))
 from app.runner import funnel
 
 from flask import render_template
@@ -24,9 +23,12 @@ def user_read(username):
     db = mongo()['users']
     collection = db['stored_data']
     result = funnel().enqueue(twitter_tasks.user_start, username)
-    result = collection.find_one({'username': username}, 200)
+    print('start request')
+    request = {'username': username}
+    result = collection.find_one(filter=request, max_time_ms=100)
+    print('result = %s' % (result,))
     if result:
-        return make_response(collection.find_one({'username': username}), 200)
+        return make_response(result, 200)
     else:
         return make_response('User Not Found', 404)
 
