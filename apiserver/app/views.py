@@ -34,7 +34,7 @@ def user_read(username):
         print('unf result')
         return make_response('User Not Found', 404)
 
-@server.route('/u/<username>/basics', methods=('GET', 'POST',))
+@server.route('/u/<username>/start', methods=('GET', 'POST',))
 def user_start(username):
     db = mongo()['users']
     collection = db['stored_data']

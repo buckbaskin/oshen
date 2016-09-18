@@ -1,8 +1,8 @@
-from app.twitter_api import API, APIMock
+from app.twitter_api import API
 
 from nose.tools import ok_
 
-def test_MockEqual():
-    ok_(len(dir(API)), len(dir(APIMock)))
-    ok_(dir(API) == dir(APIMock))
+def skiptest_MockEqual():
+    ok_(len(dir(API(True))), len(dir(API(False))))
+    ok_(dir(API(True)) == dir(API(False)))
 
