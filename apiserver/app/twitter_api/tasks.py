@@ -141,15 +141,16 @@ def filter_retweets(username):
     data = collection.find_one({'screen_name': str(username).lower()})
     # print('data! %s' % (data,))
     collection = database['retweets']
-    try:
-        user_tweets = data['tweets'][0]
-        for tweet in user_tweets:
-            print('%s said %s' % (username, tweet['text']))
-            for word in tweet['text'].split(' '):
-                print('word: %s' % (word,))
-                collection.find_one_and_update({}, {'$inc' : {word : 1}}, upsert=True)
-    except TypeError as e:
-        pass
+    if not collection.find_one():
+        try:
+            user_tweets = data['tweets'][0]
+            for tweet in user_tweets:
+                print('%s said %s' % (username, tweet['text']))
+                for word in tweet['text'].split(' '):
+                    print('word: %s' % (word,))
+                    collection.find_one_and_update({}, {'$inc' : {word.lower() : 1}}, upsert=True)
+        except TypeError as e:
+            pass
     return 0
 
 def filter_follower_retweets(username, next_queue, next_function):
@@ -189,10 +190,12 @@ def analyze_follower_retweets(username):
     new_list = []
     for item in result.items():
         try:
-            new_list.append((item[0], int(str(item[1]+'')),))
+            new_list.append((item[0], int(str(str(item[1])+'')),))
         except TypeError:
             pass
-    print(sorted(new_list, key=lambda x: x[1])[:10])
+        except ValueError:
+            pass
+    print(sorted(new_list, key=lambda x: -x[1])[:50])
     return 0
 
 def user_run_analysis(username):
