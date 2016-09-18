@@ -2,6 +2,23 @@ from app import runner, db
 from app import server
 from app.twitter_api import API
 
+import urllib
+from twitter import TwitterHTTPError
+import time
+
+def handle_api_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except urllib.error.URLError as e:
+            print('Network error')
+            raise e
+        except TwitterHTTPError as e:
+            print('Rate limited')
+            time.sleep(60*15)
+            raise e
+    return wrapper
+
 # converts each item to a store in redis for intermediates, and stores the final
 #  result in mongo (by a last job). Adds a callback field to each function that
 #  calls a python function when the job finishes.
@@ -17,7 +34,7 @@ def request_user(username):
         return 0
 
     #  else make api call
-    api_data = API().users.lookup(screen_name=str(username).lower(), include_entities=True)
+    api_data = handle_api_error(API().users.lookup)(screen_name=str(username).lower(), include_entities=True)
     for user in api_data:
         if 'screen_name' in user:
             user['screen_name'] = str(user['screen_name']).lower()
@@ -34,7 +51,7 @@ def request_1K_tweets(username):
     while(max_id != last_max_id and count < 1000):
         last_max_id = max_id
         if max_id != -1:
-            api_data = API().statuses.user_timeline(screen_name=username, count=200, trim_user='true', exclude_replies='false', contributor_details='false', include_rts='true', max_id=max_id)
+            api_data = handle_api_error(API().statuses.user_timeline)(screen_name=username, count=200, trim_user='true', exclude_replies='false', contributor_details='false', include_rts='true', max_id=max_id)
 
         for tweet in api_data:
             runner.mongo().enqueue(store_tweet, tweet)
@@ -48,7 +65,7 @@ def request_followers(username):
     list_of_follower_screen_names = []
     while(current_cursor != last_cursor):
         last_cursor = current_cursor + 0
-        api_data = API().followers.list(screen_name=username, cursor=current_cursor, count=200)
+        api_data = handle_api_error(API().followers.list)(screen_name=username, cursor=current_cursor, count=200)
         for user in api_data['users']:
             list_of_follower_screen_names.append(str(user['screen_name']).lower())
             runner.mongo().enqueue(store_user, user)
@@ -66,11 +83,11 @@ def store_user(user_data):
     result = collection.insert_one(user_data)
     return 0
 
-def store_tweet(tweet_data):
+def store_tweet(username, tweet_data):
     tweet_data['user']['screen_name'] = str(tweet_data['user']['screen_name']).lower()
     database = db.mongo()['users']
     collection = database['tweets']
-    result = collection.insert_one(tweet_data)
+    collection.find_one_and_update({'screen_name': str(username).lower()}, {'$addToSet': {username : tweet_data}})
     return 0
 
 def user_start(username):
@@ -81,6 +98,7 @@ def filter_retweets(username):
     '''
     Set aside all retweets by the given username
     '''
+    # TODO(buckbaskin):
     # get all stored tweets from a user
     # loop over them and remove the non-retweets
     # store the retweets in their own location
@@ -90,6 +108,7 @@ def filter_follower_retweets(username, next_queue, next_function):
     '''
     For all followers of a user, set aside retweets
     '''
+    # TODO(buckbaskin):
     # aggregate the list of followers
     # loop over them and queue up the filter_retweets
     
@@ -101,12 +120,14 @@ def analyze_retweets(username, primary_user):
     For an individual follower, aggregate information about the retweets, and 
     append to the information for the primary user.
     '''
+    # TODO(buckbaskin):
     return 0
 
 def analyze_follower_retweets(username, next_queue, next_function):
     '''
     Process follower retweets
     '''
+    # TODO(buckbaskin):
     # run against all followers
 
     next_queue.enqueue(next_function, username)
